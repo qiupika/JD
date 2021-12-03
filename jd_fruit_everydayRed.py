@@ -102,46 +102,59 @@ class Judge_env(object):
 cookie_list=Judge_env().main_run()
 
 ## 获取通知服务
-class Msg(object):
-    def getsendNotify(self, a=1):
+class msg(object):
+    def __init__(self, m):
+        self.str_msg = m
+        self.message()
+    def message(self):
+        global msg_info
+        print(self.str_msg)
         try:
-            url = 'https://mirror.ghproxy.com/https://raw.githubusercontent.com/wuye999/myScripts/main/sendNotify.py'
-            response = requests.get(url,timeout=10)
-            with open(SCF_path+'sendNotify.py', "w+", encoding="utf-8") as f:
-                f.write(response.text)
-            return
+            msg_info = "{}\n{}".format(msg_info, self.str_msg)
         except:
-            pass
-        if a < 3:
+            msg_info = "{}".format(self.str_msg)
+        sys.stdout.flush()
+    def getsendNotify(self, a=0):
+        if a == 0:
             a += 1
-            return self.getsendNotify(a)
-
-    def main(self,f=1):
-        global send,msg,initialize
-        sys.path.append(os.path.abspath('.'))
-        for n in range(3):
+        try:
+            url = 'https://gitee.com/curtinlv/Public/raw/master/sendNotify.py'
+            response = requests.get(url)
+            if 'curtinlv' in response.text:
+                with open('sendNotify.py', "w+", encoding="utf-8") as f:
+                    f.write(response.text)
+            else:
+                if a < 5:
+                    a += 1
+                    return self.getsendNotify(a)
+                else:
+                    pass
+        except:
+            if a < 5:
+                a += 1
+                return self.getsendNotify(a)
+            else:
+                pass
+    def main(self):
+        global send
+        cur_path = os.path.abspath(os.path.dirname(__file__))
+        sys.path.append(cur_path)
+        if os.path.exists(cur_path + "/sendNotify.py"):
             try:
-                from sendNotify import send,msg,initialize
-                break
+                from sendNotify import send
             except:
                 self.getsendNotify()
-        l=['BARK','SCKEY','TG_BOT_TOKEN','TG_USER_ID','TG_API_HOST','TG_PROXY_HOST','TG_PROXY_PORT','DD_BOT_TOKEN','DD_BOT_SECRET','Q_SKEY','QQ_MODE','QYWX_AM','PUSH_PLUS_TOKEN','PUSH_PLUS_USER','FSKEY','GOBOT_URL','GOBOT_QQ','GOBOT_TOKEN']
-        d={}
-        for a in l:
-            try:
-                d[a]=eval(a)
-            except:
-                d[a]=''
-        try:
-            initialize(d)
-        except:
+                try:
+                    from sendNotify import send
+                except:
+                    print("加载通知服务失败~")
+        else:
             self.getsendNotify()
-            if f < 3:
-                f += 1
-                return self.main(f)
-            else:
-                print('获取通知服务失败，请检查网络连接...')
-Msg().main()   # 初始化通知服务   
+            try:
+                from sendNotify import send
+            except:
+                print("加载通知服务失败~")
+        ###################  
 
 # type 和 抽奖次数
 def initForTurntableFarm(cookie):
